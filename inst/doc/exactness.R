@@ -1,6 +1,3 @@
-params <-
-list(R = 1000L, seed = 12345L)
-
 ## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -32,7 +29,11 @@ p1 <- crossing(alpha, m) %>%
 fig <- p1 %>% 
   plotly::ggplotly() %>% 
   plotly::hide_legend()
-htmlwidgets::saveWidget(fig, "plotly-fig.html")
+htmlwidgets::saveWidget(
+  widget = fig, 
+  file = "plotly-fig.html", 
+  selfcontained = rmarkdown::pandoc_available("1.12.3")
+)
 htmltools::tags$iframe(
   src = "plotly-fig.html",
   scrolling = "no", 
@@ -44,8 +45,8 @@ htmltools::tags$iframe(
 
 ## ----power-simulation---------------------------------------------------------
 alpha <- 0.05
-R <- params$R
-set.seed(params$seed)
+R <- 1000
+set.seed(12345)
 1:R %>% 
   map(~ {
     x <- rnorm(n = 10, mean = 0, sd = 1)

@@ -1,7 +1,6 @@
-948bffe57b42a2877996795f259235ea *DESCRIPTION
-a769e9ba17980e4c14a68a221b4db836 *LICENSE
+409b98977a47fc9c10b2c0893117aaf9 *DESCRIPTION
 36df07299e40f5159130c9a38ea6d947 *NAMESPACE
-131ec191c47e8141134f538878d90b77 *NEWS.md
+482f91b1fc4545df1a1799796814ca57 *NEWS.md
 5ee1e04a10570353475a7766cf04565c *R/pvalue.R
 d8afe16f1de92861a7ac1711b21fc26d *R/two-sample-stats.R
 2fb161a2762f10930a6d4798c35f5371 *R/two-sample-test.R
@@ -12,13 +11,13 @@ bbf94a8e2103bd31784fe073ae359c4a *R/utils.R
 b724986a741f1a76a7242c2c31ef359f *inst/doc/alternative.R
 55976e9bfe43be7b40bd72815706d6dd *inst/doc/alternative.Rmd
 aec0cc25975c7c4da47e01dbd8face29 *inst/doc/alternative.html
-5246d6e1fec8b0cdabe95f229dfbec0f *inst/doc/exactness.R
-654c854fb3b99737f1c627059aac7e0e *inst/doc/exactness.Rmd
-0cca76d07725747f7db2db894dd2f7cd *inst/doc/exactness.html
+dbedf2dd9b29519b395ef44922b80e41 *inst/doc/exactness.R
+d53177a38274cadcba96f21f936ed6d7 *inst/doc/exactness.Rmd
+7568b7a8989dd59106e5b720494170db *inst/doc/exactness.html
 9afc9797db9ae8d032796233c1c31cd8 *man/figures/logo.png
 4894ca10756199e25f914bfd34f517b0 *man/pipe.Rd
 bd6c97c151c474caff587ec911e1349f *man/stat_hotelling.Rd
 07c4c17fecc06244ce0e9a9d938f8093 *man/two_sample_test.Rd
 55976e9bfe43be7b40bd72815706d6dd *vignettes/alternative.Rmd
-654c854fb3b99737f1c627059aac7e0e *vignettes/exactness.Rmd
+d53177a38274cadcba96f21f936ed6d7 *vignettes/exactness.Rmd
 c53e59710668c9a5b448899599774698 *vignettes/references.bib
