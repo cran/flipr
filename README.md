@@ -14,25 +14,31 @@ coverage](https://codecov.io/gh/astamm/flipr/branch/master/graph/badge.svg)](htt
 status](https://www.r-pkg.org/badges/version/flipr)](https://CRAN.R-project.org/package=flipr)
 <!-- badges: end -->
 
-The goal of the **flipr** package is to provide a flexible framework for
-making inference via permutation. The idea is to promote the permutation
-framework as an incredibly well-suited tool for hypothesis testing on
-complex data. You supply your data, as complex as it might be, in the
-form of lists in which each entry stores one data point in a
-representation that suits you and **flipr** takes care of the
-permutation magic and provides you with the result of the permutation
-test. Permutation tests are especially appealing because they are exact
-no matter how small or big your sample sizes are. You can also use the
-so-called *non-parametric combination* approach in this setting to
-combine several statistics to better target the alternative hypothesis
-you are testing against. Asymptotic consistency is also guaranteed under
-mild conditions on the statistic you use. Currently, you can do
-two-sample tests. We plan on adding very soon one-sample tests, ANOVA
-and regression to the list as well.
+The goal of the [**flipr**](https://astamm.github.io/flipr/) package is
+to provide a flexible framework for making inference via permutation.
+The idea is to promote the permutation framework as an incredibly
+well-suited tool for inference on complex data. You supply your data, as
+complex as it might be, in the form of lists in which each entry stores
+one data point in a representation that suits you and
+[**flipr**](https://astamm.github.io/flipr/) takes care of the
+permutation magic and provides you with either point estimates or
+confidence regions or p-value of hypothesis tests. Permutation tests are
+especially appealing because they are exact no matter how small or big
+your sample sizes are. You can also use the so-called *non-parametric
+combination* approach in this setting to combine several statistics to
+better target the alternative hypothesis you are testing against.
+Asymptotic consistency is also guaranteed under mild conditions on the
+statistic you use. The [**flipr**](https://astamm.github.io/flipr/)
+package provides a flexible permutation framework for making inference
+such as point estimation, confidence intervals or hypothesis testing, on
+any kind of data, be it univariate, multivariate, or more complex such
+as network-valued data, topological data, functional data or
+density-valued data.
 
 ## Installation
 
-You can install the latest stable version of **flipr** on CRAN with:
+You can install the latest stable version of
+[**flipr**](https://astamm.github.io/flipr/) on CRAN with:
 
 ``` r
 install.packages("flipr")
@@ -50,7 +56,7 @@ remotes::install_github("astamm/flipr")
 
 We hereby use the very simple t-test for comparing the means of two
 univariate samples to show how easy it is to carry out a permutation
-test with **flipr**.
+test with [**flipr**](https://astamm.github.io/flipr/).
 
 Let us first generate a first sample of size 10 governed by a Gaussian
 distribution of mean 0 and unit variance:
@@ -69,7 +75,7 @@ x2 <- rnorm(n = 10, mean = 3, sd = 1)
 ```
 
 We can implement the squared *t*-statistic as a function that plays well
-with **flipr** as follows:
+with [**flipr**](https://astamm.github.io/flipr/) as follows:
 
 ``` r
 stat_t2 <- function(data, indices) {
@@ -79,13 +85,9 @@ stat_t2 <- function(data, indices) {
   indices2 <- seq_len(n)[-indices]
   x1 <- unlist(data[indices])
   x2 <- unlist(data[indices2])
-  stats::t.test(x = x1, y = x2, var.equal = TRUE)$statistic^2
+  stats::t.test(x = x1, y = x2, var.equal = TRUE)$statistic
 }
 ```
-
-Note that the square is needed as permutation tests look for large
-values of the test statistic to find evidence against the null
-hypothesis.
 
 Now we can simply use the function `flipr::two_sample_test()` to get the
 result of the test:
@@ -95,10 +97,11 @@ test_t2 <- flipr::two_sample_test(
   x = x1, 
   y = x2, 
   statistic = stat_t2, 
-  B = 10000
+  B = 100000, 
+  alternative = "two_tail"
 )
 test_t2$pvalue
-#> [1] 0.0001945701
+#> [1] 2.461321e-05
 ```
 
 We can compare the resulting p-value with the one obtained using the

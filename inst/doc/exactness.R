@@ -55,14 +55,14 @@ set.seed(12345)
       x = x, 
       y = y, 
       statistic = stat_hotelling, 
-      test = "exact", 
+      type = "exact", 
       B = 100
     )
     test_approx <- two_sample_test(
       x = x, 
       y = y, 
       statistic = stat_hotelling, 
-      test = "approximate", 
+      type = "approximate", 
       B = 100
     )
     c(
