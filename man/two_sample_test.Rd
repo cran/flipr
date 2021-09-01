@@ -7,42 +7,58 @@
 two_sample_test(
   x,
   y,
-  statistic = stat_hotelling,
+  stats = list(stat_t),
   B = 1000L,
-  alternative = "right_tail",
+  M = NULL,
+  alternative = "two_tail",
   combine_with = "tippett",
   type = "exact",
   seed = NULL
 )
 }
 \arguments{
-\item{x}{A list or matrix representing the 1st sample.}
+\item{x}{A numeric vector or a numeric matrix or a list representing the 1st
+sample. Alternatively, it can be a distance matrix stored as an object of
+class \code{\link[stats]{dist}}, in which case test statistics based on
+inter-point distances (marked with the \verb{_ip} suffix) should be used.}
 
-\item{y}{A list or matrix representing the 2nd sample.}
+\item{y}{A numeric vector if \code{x} is a numeric vector, or a numeric matrix if
+\code{x} is a numeric matrix, or a list if \code{x} is a list, representing the second
+sample. Alternatively, if \code{x} is an object of class
+\code{\link[stats]{dist}}, it should be a numeric scalar specifying the
+size of the first sample.}
 
-\item{statistic}{A character vector specifying the chosen test statistic(s).
-These can be \code{\link{stat_hotelling}} or user-specified functions that
-define desired statistics. See the section \emph{User-supplied statistic
-function} for more information on how these user-supplied functions should
-be structured for compatibility with the \strong{flipr} framwork. Default is
-\code{\link{stat_hotelling}}.}
+\item{stats}{A list of functions produced by \code{\link[rlang]{as_function}}
+specifying the chosen test statistic(s). A number of test statistic
+functions are implemented in the package and can be used as such.
+Alternatively, one can provide its own implementation of test statistics
+that (s)he deems relevant for the problem at hand. See the section
+\emph{User-supplied statistic function} for more information on how these
+user-supplied functions should be structured for compatibility with the
+\strong{flipr} framework. Default is \code{list(\link{stat_t})}.}
 
-\item{B}{The number of sampled permutation. Default is \code{1000L}.}
+\item{B}{The number of sampled permutations. Default is \code{1000L}.}
 
-\item{alternative}{A string specifying whether the p-value is right-tailed,
-left-tailed or two-tailed. Choices are \code{"right_tail"}, \code{"left_tail"} and
-\code{"two_tail"}. Default is \code{"right_tail"}. Obviously, if the test statistic
-used in argument \code{statistic} is positive, all alternatives will lead to the
-two-tailed p-value.}
+\item{M}{The total number of possible permutations. Defaults to \code{NULL}, which
+means that it is automatically computed from the given sample size(s).}
+
+\item{alternative}{A single string or a character vector specifying whether
+the p-value is right-tailed, left-tailed or two-tailed. Choices are
+\code{"right_tail"}, \code{"left_tail"} and \code{"two_tail"}. Default is \code{"two_tail"}. If
+a single string is provided, it is assumed that it should be applied to all
+test statistics provided by the user. Alternative, the length of
+\code{alternative} should match the length of the \code{stats} parameter and it is
+assumed that there is a one-to-one correspondence.}
 
 \item{combine_with}{A string specifying the combining function to be used to
 compute the single test statistic value from the set of p-value estimates
-obtained during the non-parametric combination testing procedure. Default
-is \code{"tippett"}, which picks Tippett's function.}
+obtained during the non-parametric combination testing procedure. For now,
+choices are either \code{"tippett"} or \code{"fisher"}. Default is \code{"tippett"}, which
+picks Tippett's function.}
 
-\item{type}{A string specifying if performing an exact test through the use
-of Phipson-Smyth estimate of the p-value or an approximate test through a
-Monte-Carlo estimate of the p-value. Default is \code{"exact"}.}
+\item{type}{A string specifying which formula should be used to compute the
+p-value. Choices are \code{exact} (default), \code{upper_bound} and \code{estimate}. See
+Phipson & Smith (2010) for details.}
 
 \item{seed}{An integer specifying the seed of the random generator useful for
 result reproducibility or method comparisons. Default is \code{NULL}.}
@@ -54,10 +70,10 @@ permutation test and a numeric vector storing the values of the permuted
 statistics.
 }
 \description{
-This function carries out an hypothesis test where the null hypothesis is
-that the two samples are ruled by the same underlying generative probability
-distribution against the alternative hypothesis that they are ruled by two
-separate generative probability distributions.
+This function carries out an hypothesis test in which the null hypothesis is
+that the two samples are governed by the same underlying generative
+probability distribution against the alternative hypothesis that they are
+governed by two different generative probability distributions.
 }
 \section{User-supplied statistic function}{
 
@@ -67,11 +83,16 @@ A user-specified function should have at least two arguments:
 concatenated observations with the original \code{n1} observations from the first
 sample on top and the original \code{n2} observations from the second sample
 below;
-\item the second argument is \code{indices} which should be an integer vector giving
+\item the second argument is \code{perm_data} which should be an integer vector giving
 the indices in \code{data} that are considered to belong to the first sample.
 }
 
-See the \code{\link{stat_hotelling}} function for an example.
+It is possible to use the \code{\link{use_stat}} function with \code{nsamples = 2}
+to have \strong{flipr} automatically generate a template file for writing down
+your own test statistics in a way that makes it compatible with the \strong{flipr}
+framework.
+
+See the \code{\link{stat_t}} function for an example.
 }
 
 \examples{

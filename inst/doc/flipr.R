@@ -1,22 +1,11 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----setup, message = FALSE, include = FALSE----------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-load("../R/sysdata.rda")
-
-## ----setup, message = FALSE---------------------------------------------------
 library(tidyverse)
 library(flipr)
-
-generate_grid <- function(center_value, min_value, max_value, n) {
-  stopifnot(center_value > min_value && center_value < max_value)
-  c(
-    seq(min_value, center_value, len = n / 2 + 1)[1:(n / 2)], 
-    center_value, 
-    seq(center_value, max_value, len = n / 2 + 1)[-1]
-  )
-}
+load("../R/sysdata.rda")
 
 ## -----------------------------------------------------------------------------
 n1 <- 10
@@ -43,102 +32,159 @@ c1 <- rnorm(n1, mean = mu1, sd = sd1)
 c2 <- rgamma(n2, shape = 16, rate = 4)
 
 ## -----------------------------------------------------------------------------
-null_spec <- function(y, parameters) {y - parameters[1]}
+null_spec <- function(y, parameters) {
+  purrr::map(y, ~ .x - parameters[1])
+}
+
+## -----------------------------------------------------------------------------
+stat_functions <- list(stat_t)
+
+## -----------------------------------------------------------------------------
+stat_assignments <- list(delta = 1)
 
 ## ---- eval=FALSE--------------------------------------------------------------
-#  delta_pe <- mean(a2) - mean(a1)
-#  dfa <- tibble(
-#    delta = generate_grid(delta_pe, delta_pe - 2, delta_pe + 2, 20),
-#    pvalue = delta %>%
-#      two_sample_pf(
-#        null_specification = null_spec,
-#        x = a1,
-#        y = a2,
-#        statistic = stat_t,
-#        B = B,
-#        seed = 1234,
-#        alternative = "two_tail"
-#      )
-#  ) %>%
-#    mutate(
-#      pvalue_alt = delta %>%
-#        map_dbl(~ {
-#          t.test(
-#            x = a2,
-#            y = a1,
-#            alternative = "two.sided",
-#            mu = .x,
-#            var.equal = TRUE
-#          )$p.value
-#        })
-#    ) %>%
-#    select(
-#      delta,
-#      `Parametric Approach` = pvalue_alt,
-#      `Permutation Approach` = pvalue
-#    ) %>%
-#    pivot_longer(-delta)
+#  pf <- PlausibilityFunction$new(
+#    null_spec = null_spec,
+#    stat_functions = stat_functions,
+#    stat_assignments = stat_assignments,
+#    x, y
+#  )
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pf$get_value(0)
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa <- PlausibilityFunction$new(
+#    null_spec = null_spec,
+#    stat_functions = stat_functions,
+#    stat_assignments = stat_assignments,
+#    a1, a2
+#  )
+#  pfa$set_nperms(B)
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$set_point_estimate(mean(a2) - mean(a1))
+
+## -----------------------------------------------------------------------------
+pfa$point_estimate
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$parameters
+
+## ---- echo=FALSE--------------------------------------------------------------
+p <- pfa$parameters
+p[[1]]$range$lower <- dials::unknown()
+p[[1]]$range$upper <- dials::unknown()
+p
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$set_parameter_bounds(
+#    point_estimate = pfa$point_estimate,
+#    conf_level = pfa$max_conf_level
+#  )
+
+## -----------------------------------------------------------------------------
+pfa$parameters
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$set_grid(
+#    parameters = pfa$parameters,
+#    npoints = 50L
+#  )
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$grid
+
+## ---- echo=FALSE--------------------------------------------------------------
+select(pfa$grid, -pvalue)
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$evaluate_grid(grid = pfa$grid)
+
+## -----------------------------------------------------------------------------
+pfa$grid
+
+## -----------------------------------------------------------------------------
+dfa <- pfa$grid |> 
+  mutate(
+    pvalue_alt = delta %>%
+      map_dbl(~ {
+        t.test(
+          x = a2, 
+          y = a1, 
+          alternative = "two.sided", 
+          mu = .x, 
+          var.equal = TRUE
+        )$p.value
+      })
+  ) %>% 
+  select(
+    delta, 
+    `Parametric Approach`  = pvalue_alt, 
+    `Permutation Approach` = pvalue
+  ) %>% 
+  pivot_longer(-delta)
 
 ## ---- fig.asp=0.8, fig.width=6, out.width="97%", dpi=300----------------------
 dfa %>% 
-  subset(name == "Permutation Approach") %>% 
-  ggplot(aes(delta, value)) + 
-  geom_line() + 
-  labs(
-    title = "P-value function for the mean difference", 
-    subtitle = "Using Student's t-statistic and two-tailed p-values", 
-    x = expression(delta), 
-    y = "p-value"
-  ) + 
-  theme_bw()
-
-## ---- fig.asp=0.8, fig.width=6, out.width="97%", dpi=300----------------------
-dfa %>% 
+  filter(value > 1e-3) %>% 
   ggplot(aes(delta, value, color = name)) + 
   geom_line() + 
+  geom_hline(
+    yintercept = 0.05, 
+    color = "black", 
+    linetype = "dashed"
+  ) + 
   labs(
     title = "Scenario A: P-value function for the mean difference", 
     subtitle = "Using Student's t-statistic and two-tailed p-values", 
     x = expression(delta), 
-    y = "p-value"
+    y = "p-value", 
+    color = "Type of test"
   ) + 
   theme_bw() + 
-  theme(legend.position = "none") + 
-  facet_wrap(vars(name), nrow = 1)
+  theme(legend.position = "top") + 
+  scale_y_log10()
 
 ## ---- eval=FALSE--------------------------------------------------------------
-#  deltb_pe <- mean(b2) - mean(b1)
-#  dfb <- tibble(
-#    delta = generate_grid(deltb_pe, deltb_pe - 2, deltb_pe + 2, 20),
-#    pvalue = delta %>%
-#      two_sample_pf(
-#        null_specification = null_spec,
-#        x = b1,
-#        y = b2,
-#        statistic = stat_t,
-#        B = B,
-#        seed = 1234,
-#        alternative = "two_tail"
-#      )
-#  ) %>%
-#    mutate(
-#      pvalue_alt = delta %>%
-#        map_dbl(~ {
-#          t.test(
-#            x = b2,
-#            y = b1,
-#            alternative = "two.sided",
-#            mu = .x,
-#            var.equal = TRUE
-#          )$p.value
-#        })
-#    ) %>%
-#    select(
-#      delta,
-#      Parametric = pvalue_alt,
-#      Permutation = pvalue
-#    ) %>%
-#    pivot_longer(-delta)
+#  pfb <- PlausibilityFunction$new(
+#    null_spec = null_spec,
+#    stat_functions = stat_functions,
+#    stat_assignments = stat_assignments,
+#    b1, b2
+#  )
+#  pfb$set_nperms(B)
+#  pfb$set_point_estimate(mean(b2) - mean(b1))
+#  pfb$set_parameter_bounds(
+#    point_estimate = pfb$point_estimate,
+#    conf_level = pfb$max_conf_level
+#  )
+#  pfb$set_grid(
+#    parameters = pfb$parameters,
+#    npoints = 50L
+#  )
+#  pfb$evaluate_grid(grid = pfb$grid)
+
+## -----------------------------------------------------------------------------
+dfb <- pfb$grid |> 
+  mutate(
+    pvalue_alt = delta %>%
+      map_dbl(~ {
+        t.test(
+          x = b2, 
+          y = b1, 
+          alternative = "two.sided", 
+          mu = .x, 
+          var.equal = TRUE
+        )$p.value
+      })
+  ) %>% 
+  select(
+    delta, 
+    `Parametric Approach`  = pvalue_alt, 
+    `Permutation Approach` = pvalue
+  ) %>% 
+  pivot_longer(-delta)
 
 ## ----fig.asp=0.8, fig.width=6, out.width="97%", dpi=300-----------------------
 dfb %>% 
@@ -162,38 +208,44 @@ dfb %>%
   scale_y_log10()
 
 ## ---- eval=FALSE--------------------------------------------------------------
-#  deltc_pe <- mean(c2) - mean(c1)
-#  dfc <- tibble(
-#    delta = generate_grid(deltc_pe, deltc_pe - 2, deltc_pe + 2, 20),
-#    pvalue = delta %>%
-#      two_sample_pf(
-#        null_specification = null_spec,
-#        x = c1,
-#        y = c2,
-#        statistic = stat_t,
-#        B = B,
-#        seed = 1234,
-#        alternative = "two_tail"
-#      )
-#  ) %>%
-#    mutate(
-#      pvalue_alt = delta %>%
-#        map_dbl(~ {
-#          t.test(
-#            x = c2,
-#            y = c1,
-#            alternative = "two.sided",
-#            mu = .x,
-#            var.equal = TRUE
-#          )$p.value
-#        })
-#    ) %>%
-#    select(
-#      delta,
-#      Parametric = pvalue_alt,
-#      Permutation = pvalue
-#    ) %>%
-#    pivot_longer(-delta)
+#  pfc <- PlausibilityFunction$new(
+#    null_spec = null_spec,
+#    stat_functions = stat_functions,
+#    stat_assignments = stat_assignments,
+#    c1, c2
+#  )
+#  pfc$set_nperms(B)
+#  pfc$set_point_estimate(mean(c2) - mean(c1))
+#  pfc$set_parameter_bounds(
+#    point_estimate = pfc$point_estimate,
+#    conf_level = pfc$max_conf_level
+#  )
+#  pfc$set_grid(
+#    parameters = pfc$parameters,
+#    npoints = 50L
+#  )
+#  pfc$evaluate_grid(grid = pfc$grid)
+
+## -----------------------------------------------------------------------------
+dfc <- pfc$grid |> 
+  mutate(
+    pvalue_alt = delta %>%
+      map_dbl(~ {
+        t.test(
+          x = c2, 
+          y = c1, 
+          alternative = "two.sided", 
+          mu = .x, 
+          var.equal = TRUE
+        )$p.value
+      })
+  ) %>% 
+  select(
+    delta, 
+    `Parametric Approach`  = pvalue_alt, 
+    `Permutation Approach` = pvalue
+  ) %>% 
+  pivot_longer(-delta)
 
 ## ----fig.asp=0.8, fig.width=6, out.width="97%", dpi=300-----------------------
 dfc %>% 
@@ -216,41 +268,22 @@ dfc %>%
   theme(legend.position = "top") + 
   scale_y_log10()
 
-## -----------------------------------------------------------------------------
-optimise(
-  f = two_sample_pf, 
-  interval = c(0, 6), 
-  null_specification = null_spec, 
-  x = a1, 
-  y = a2, 
-  statistic = stat_t, 
-  B = 10000, 
-  seed = 1234, 
-  alternative = "two_tail", 
-  maximum = TRUE
-)
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$set_point_estimate(overwrite = TRUE)
 
 ## -----------------------------------------------------------------------------
-two_sample_ci(
-  point_estimate = mean(a2) - mean(a1), 
-  alpha = 0.05, 
-  null_specification = null_spec, 
-  x = a1, 
-  y = a2, 
-  statistic = stat_t, 
-  B = 10000, 
-  alternative = "two_tail"
-)
+pfa$point_estimate
+
+## ---- eval=FALSE--------------------------------------------------------------
+#  pfa$set_parameter_bounds(
+#    point_estimate = pfa$point_estimate,
+#    conf_level = 0.95
+#  )
 
 ## -----------------------------------------------------------------------------
-two_sample_pf(
-  parameters = 3, 
-  null_specification = null_spec, 
-  x = a1, 
-  y = a2, 
-  statistic = stat_t, 
-  B = 10000, 
-  seed = 1234, 
-  alternative = "two_tail"
-  )
+pfa$parameters
+
+## -----------------------------------------------------------------------------
+pfa$set_nperms(1000)
+pfa$get_value(3)
 
