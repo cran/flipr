@@ -105,7 +105,7 @@ select(pfa$grid, -pvalue)
 pfa$grid
 
 ## -----------------------------------------------------------------------------
-dfa <- pfa$grid |> 
+dfa <- pfa$grid %>%
   mutate(
     pvalue_alt = delta %>%
       map_dbl(~ {
@@ -166,7 +166,7 @@ dfa %>%
 #  pfb$evaluate_grid(grid = pfb$grid)
 
 ## -----------------------------------------------------------------------------
-dfb <- pfb$grid |> 
+dfb <- pfb$grid %>%
   mutate(
     pvalue_alt = delta %>%
       map_dbl(~ {
@@ -227,7 +227,7 @@ dfb %>%
 #  pfc$evaluate_grid(grid = pfc$grid)
 
 ## -----------------------------------------------------------------------------
-dfc <- pfc$grid |> 
+dfc <- pfc$grid %>%
   mutate(
     pvalue_alt = delta %>%
       map_dbl(~ {

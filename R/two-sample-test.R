@@ -59,6 +59,7 @@
 #'   Phipson & Smith (2010) for details.
 #' @param seed An integer specifying the seed of the random generator useful for
 #'   result reproducibility or method comparisons. Default is `NULL`.
+#' @param ... Extra parameters specific to some statistics.
 #'
 #' @return A \code{\link[base]{list}} with three components: the value of the
 #'   statistic for the original two samples, the p-value of the resulting
@@ -93,10 +94,11 @@ two_sample_test <- function(x, y,
                             alternative = "two_tail",
                             combine_with = "tippett",
                             type = "exact",
-                            seed = NULL) {
+                            seed = NULL,
+                            ...) {
 
-  if (is.numeric(x)) {
-    if (!is.numeric(y) || length(y) == 1)
+  if (rlang::is_bare_numeric(x)) {
+    if (!rlang::is_bare_numeric(y) || length(y) == 1)
       abort("When the first sample is of scalar type, the second sample should be of scalar type as well.")
   } else if (is.matrix(x)) {
     if (!is.matrix(y))
@@ -105,9 +107,7 @@ two_sample_test <- function(x, y,
     if (!is.list(y))
       abort("When the first sample is stored in a list, the second sample should be stored in a list as well.")
   } else if (inherits(x, "dist")) {
-    if (!is.numeric(y))
-      abort("When the first argument is a distance matrix, the second argument should be an integer specifying the size of the first sample.")
-    if (length(y) > 1)
+    if (!rlang::is_scalar_integer(y))
       abort("When the first argument is a distance matrix, the second argument should be an integer specifying the size of the first sample.")
   } else {
     abort("The first argument should be of class numeric, matrix, list or dist.")
@@ -155,6 +155,7 @@ two_sample_test <- function(x, y,
     perm_data = perm_data,
     stat_data = stat_data,
     M = M,
-    combine_with = combine_with
+    combine_with = combine_with,
+    ...
   )
 }

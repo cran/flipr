@@ -251,6 +251,13 @@ PlausibilityFunction <- R6::R6Class(
     #'   providing specific values of the parameters of interest for assessment
     #'   of their plausibility in the form of a p-value of the corresponding
     #'   hypothesis test.
+    #' @param keep_null_distribution A boolean specifying whether the empirical
+    #'   permutation null distribution should be returned as well. Defaults to
+    #'   `FALSE`.
+    #' @param keep_permutations A boolean specifying whether the list of sampled
+    #'   permutations used to compute the empirical permutation null
+    #'   distribution should be returned as well. Defaults to `FALSE`.
+    #' @param ... Extra parameters specific to some statistics.
     #'
     #' @examples
     #' x <- rnorm(10)
@@ -266,7 +273,10 @@ PlausibilityFunction <- R6::R6Class(
     #' )
     #' pf$set_nperms(50)
     #' pf$get_value(2)
-    get_value = function(parameters) {
+    get_value = function(parameters,
+                         keep_null_distribution = FALSE,
+                         keep_permutations = FALSE,
+                         ...) {
       if (length(parameters) != self$nparams)
         abort(paste0(
           "The plausibility function has been defined to infer ",
@@ -278,18 +288,19 @@ PlausibilityFunction <- R6::R6Class(
       withr::local_seed(private$seed)
       if (private$nsamples == 1) {
         x <- private$null_spec(private$data[[1]], parameters)
-        one_sample_test(
+        test_result <- one_sample_test(
           x = x,
           stats = private$stat_functions,
           B = self$nperms,
           M = self$nperms_max,
           alternative = self$alternative,
           type = self$pvalue_formula,
-          combine_with = self$aggregator
-        )$pvalue
+          combine_with = self$aggregator,
+          ...
+        )
       } else {
         y <- private$null_spec(private$data[[2]], parameters)
-        two_sample_test(
+        test_result <- two_sample_test(
           x = private$data[[1]],
           y = y,
           stats = private$stat_functions,
@@ -297,9 +308,20 @@ PlausibilityFunction <- R6::R6Class(
           M = self$nperms_max,
           alternative = self$alternative,
           type = self$pvalue_formula,
-          combine_with = self$aggregator
-        )$pvalue
+          combine_with = self$aggregator,
+          ...
+        )
       }
+      if (keep_null_distribution && keep_permutations)
+        return(test_result)
+      else if (keep_null_distribution) {
+        test_result$permutations <- NULL
+        return(test_result)
+      } else if (keep_permutations) {
+        test_result$null_distribution <- NULL
+        return(test_result)
+      } else
+        return(test_result$pvalue)
     },
 
     #' @field max_conf_level A numeric value specifying the maximum confidence
@@ -634,8 +656,8 @@ PlausibilityFunction <- R6::R6Class(
           library(purrr)
         })
       }
-      self$grid$pvalue <- self$grid |>
-        purrr::array_tree(margin = 1) |>
+      self$grid$pvalue <- self$grid %>%
+        purrr::array_tree(margin = 1) %>%
         pbapply::pbsapply(self$get_value, cl = cl)
       if (ncores > 1L)
         parallel::stopCluster(cl)
