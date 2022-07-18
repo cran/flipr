@@ -247,15 +247,18 @@ df_sd %>%
 #    parameters = pf$parameters,
 #    npoints = ngrid_out
 #  )
-#  Zout <- akima::interp(
-#    x = grid_in$delta,
-#    y = grid_in$rho,
-#    z = grid_in$pvalue,
-#    xo = sort(unique(pf$grid$delta)),
-#    yo = sort(unique(pf$grid$rho)),
-#    linear = TRUE
-#  )
-#  pf$grid$pvalue <- as.numeric(Zout$z)
+#  if (requireNamespace("interp", quietly = TRUE)) {
+#    Zout <- interp::interp(
+#      x = grid_in$delta,
+#      y = grid_in$log_rho,
+#      z = grid_in$pvalue,
+#      xo = sort(unique(pf$grid$delta)),
+#      yo = sort(unique(pf$grid$log_rho))
+#    )
+#    pf$grid$pvalue <- as.numeric(Zout$z)
+#  } else
+#    pf$grid$pvalue <- rep(NA, nrow(pf$grid))
+#  
 #  df_fisher <- pf$grid
 #  
 #  # Tippett combining function
@@ -270,15 +273,18 @@ df_sd %>%
 #    parameters = pf$parameters,
 #    npoints = ngrid_out
 #  )
-#  Zout <- akima::interp(
-#    x = grid_in$delta,
-#    y = grid_in$rho,
-#    z = grid_in$pvalue,
-#    xo = sort(unique(pf$grid$delta)),
-#    yo = sort(unique(pf$grid$rho)),
-#    linear = TRUE
-#  )
-#  pf$grid$pvalue <- as.numeric(Zout$z)
+#  if (requireNamespace("interp", quietly = TRUE)) {
+#    Zout <- interp::interp(
+#      x = grid_in$delta,
+#      y = grid_in$log_rho,
+#      z = grid_in$pvalue,
+#      xo = sort(unique(pf$grid$delta)),
+#      yo = sort(unique(pf$grid$log_rho))
+#    )
+#    pf$grid$pvalue <- as.numeric(Zout$z)
+#  } else
+#    pf$grid$pvalue <- rep(NA, nrow(pf$grid))
+#  
 #  df_tippett <- pf$grid
 
 ## ---- fig.asp=0.85, fig.width=9, out.width="97%", dpi=300---------------------

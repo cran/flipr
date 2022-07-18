@@ -1,3 +1,9 @@
+# flipr 0.3.2
+
+- Removed `akima` from package dependencies.
+- Updated GHA workflows and `roxygen2` version.
+- Updated all URLs to reflect change of ownership.
+
 # flipr 0.3.1
 
 - Remove any occurrence of base-R pipe operator in favor of [**magrittr**](https://magrittr.tidyverse.org) pipe operator for now for backward compatibility with older versions of R.
@@ -46,7 +52,7 @@ R-release due to pandoc version not available preventing the `pvalue-function` v
 test is performed.
 * Add a function to compute p-value functions for sets of null hypotheses.
 * Draft of article illustrating the computation of p-value functions with
-[**flipr**](https://astamm.github.io/flipr/).
+[**flipr**](https://lmjl-alea.github.io/flipr/).
 * Add $t$, mean and Fisher test statistics.
 * Correct two-tail p-value computation.
 * Better API for pvalue function.
