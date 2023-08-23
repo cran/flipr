@@ -3,13 +3,15 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(tibble)
+library(tidyr)
 library(flipr)
 load("../R/sysdata.rda")
 
 ## ----setup, message=FALSE-----------------------------------------------------
-library(tidyverse)
-library(flipr)
 ngrid_in <- 10
 ngrid_out <- 100
 nperms <- 100000
